@@ -4,7 +4,7 @@ WIP: A fast simple gentoo inspired aur helper written in nim
 # Installation
 ## Binary
 ```bash
-wget <file>
+wget https://github.com/Infinitybeond1/aurc/raw/master/aurc
 chmod +x aurc
 sudo mkdir -p /usr/local/bin/
 sudo cp aurc /usr/local/bin/
