@@ -81,12 +81,19 @@ proc inRepos(package: string): void =
   else:
     echo execCmdEx(fmt"sudo pacman -S {package}")[0]
 
+proc alreadyInstalled(package: string): void =
+  let code: int = execCmdEx(fmt"pacman -Q {package}")[1]
+  if code == 0:
+    echo "Package already installed"
+  else:
+    inRepos(package)
+
 if args["ask"].parseBool():
   stdout.write("Continue with transaction (Y/n): ")
   let choice = readLine(stdin).strip()
   if choice == "" or choice == "y" or choice == "Y":
     inRepos(args["package"])
 else:
-  inRepos(args["package"])
+  alreadyInstalled(args["package"])
 
 
