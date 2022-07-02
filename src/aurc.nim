@@ -1,14 +1,13 @@
 import
-  tables,
-  clapfn,
+  #tables,
   strutils,
   osproc,
   strformat,
   httpclient,
   distros,
   terminal,
-  os,
-  errors
+  os
+  #errors
 
 if detectOs(Windows) or detectOs(MacOSX):
   echo "aurc will not work on windows or macos"
@@ -17,20 +16,6 @@ if detectOs(Windows) or detectOs(MacOSX):
 let cacheDir = getHomeDir() & ".aurc/cache/"
 if not dirExists(cacheDir):
   createDir(cacheDir)
-
-var parser = ArgumentParser(programName: "aurc",
-                            description: "aurc", version: "1.0.0",
-                            author: "Infinitybeond1 <ripluke#5044>")
-
-
-parser.addRequiredArgument(name = "package", help = "Which package to install")
-parser.addSwitchArgument(shortName = "-a", longName = "--ask", default = false,
-                         help = "Ask before starting transaction")
-#parser.addSwitchArgument(shortName="-q", longName="--quiet", default=false,
-#                         help="Mute makepkg output")
-
-
-let args = parser.parse()
 
 proc cleanup(package: string): void =
   removeDir(cacheDir & package)
@@ -87,13 +72,87 @@ proc alreadyInstalled(package: string): void =
     echo "Package already installed"
   else:
     inRepos(package)
+ 
 
-if args["ask"].parseBool():
+var packages = newSeq[string](0)
+var flags = newSeq[string](0)
+
+for arg in 1..paramCount():
+  var flag = paramStr(arg)
+  if flag.startsWith("--"):
+    if flag == "--help":
+      echo "aurc - Install packages from AUR"
+      echo "Usage: aurc [options] <package>"
+      echo "Options:"
+      echo "  -a, --ask     Ask before installing" 
+      quit(0) 
+    else: 
+      flag.removePrefix("--")
+      flags.add(flag)
+  elif flag.startsWith("-"):
+    if flag == "-h":
+      echo "aurc - Install packages from AUR"
+      echo "Usage: aurc [options] <package>"
+      echo "Options:"
+      echo "  -a, --ask     Ask before installing" 
+      quit(0) 
+    else: 
+      flag.removePrefix("-")
+      flags.add(flag)
+  else: 
+    packages.add(flag) 
+#echo packages 
+#echo flags
+
+var ask: bool
+for flag in flags:
+  if flag == "ask":
+    ask = true
+  else:
+    echo "Unknown flag: " & flag
+    quit(1)
+
+if ask:
   stdout.write("Continue with transaction (Y/n): ")
   let choice = readLine(stdin).strip()
   if choice == "" or choice == "y" or choice == "Y":
-    inRepos(args["package"])
+    for package in packages:
+      alreadyInstalled(package)
 else:
-  alreadyInstalled(args["package"])
+  for package in packages:
+    alreadyInstalled(package)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
