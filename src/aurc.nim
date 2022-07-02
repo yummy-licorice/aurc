@@ -14,7 +14,7 @@ if detectOs(Windows) or detectOs(MacOSX):
   echo "aurc will not work on windows or macos"
   quit 1
 
-const cacheDir = getHomeDir() & ".aurc/cache/"
+let cacheDir = getHomeDir() & ".aurc/cache/"
 if not dirExists(cacheDir):
   createDir(cacheDir)
 
