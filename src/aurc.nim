@@ -35,16 +35,35 @@ let args = parser.parse()
 proc cleanup(package: string): void =
   removeDir(cacheDir & package)
   
+proc makepkg(package: string, flags: string): int =
+  return execCmd(fmt"cd {cacheDir}{package} && makepkg {flags}")  
+  
 proc installAur(package: string): void =
-  try:
-    stdout.styledWriteLine(fgGreen, package & ": ", fgWhite, "Downloading PKGBUILD")
-    discard execCmd(fmt"git clone https://aur.archlinux.org/{package}.git {cacheDir}{package}")
-    stdout.styledWriteLine(fgGreen, package & ": ", fgWhite, "Starting Build")
-    discard execCmd(fmt"cd {cacheDir}{package} && makepkg -si")
-    cleanup(package)
-
-  except:
-    logError("build failed")
+  stdout.styledWriteLine(fgGreen, package & ": ", fgWhite, "Downloading PKGBUILD")
+  discard execCmd(fmt"git clone https://aur.archlinux.org/{package}.git {cacheDir}{package}")
+  stdout.styledWriteLine(fgGreen, package & ": ", fgWhite, "Starting Build")
+  let buildStatus: int = makepkg(package, "-si")
+  if buildStatus == 1:
+    echo "Build for package (" & package & ") has failed\nYou can try again with one of the options below or you can cancel"
+    echo """
+    [1] Retry
+    [2] Skip checksums
+    [3] Skip PGP
+    [4] Skip check()
+    [5] Cancel
+    """
+    let buildOpt = readChar(stdin)
+    if buildOpt == '1':
+      discard makepkg(package, "-si")
+    elif buildOpt == '2':
+      discard makepkg(package, "-si --skipchecksums")
+    elif buildOpt == '3':
+      discard makepkg(package, "-si --skippgpcheck")
+    elif buildOpt == '4':
+      discard makepkg(package, "-si --skipinteg")
+    else:
+      cleanup(package)
+      quit()
 
 proc inAur(package: string): void =
   try:
