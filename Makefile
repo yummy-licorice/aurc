@@ -4,7 +4,7 @@ all:
 	@nimble build -d=ssl
 
 install:
-	@cp aurc $(DESTDIR)$(PREFIX)/bin/aurc
+	@cp aurc $(DESTDIR)$(PREFIX)bin/aurc
 
 
 uninstall:
